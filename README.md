@@ -1,39 +1,147 @@
 # CreditWise
 
-CreditWise is a simulated credit card and billing manager for a Web Programming Technologies project. Users can manage simulated cards, record purchases and refunds, generate billing statements, record repayments, receive due date and utilization alerts, and view spending reports. Administrators can monitor accounts, cards, and contact messages.
+CreditWise is a web application for organizing simulated credit cards and their activity. Users can manage cards, track balances and billing statements, record repayments, receive reminders, and review spending reports. Administrators can review accounts and contact messages.
 
-> **Simulation only:** CreditWise does not connect to a bank, process payments, or need real card details. Use fictional last four digits. Never enter a real card number, CVV, PIN, or banking password.
+> **Simulation only:** CreditWise does not connect to banks or transfer money. Use fictional card details. Never enter a real card number, CVV, PIN, or banking password.
 
-> **Team handoff:** The repository is being assembled in person-wise pull requests. The Person 1 branch contains Person 1’s files and the shared foundation only; the app will remain incomplete until Persons 2 and 3 add their assigned modules.
+## Features
+
+- **Credit card management:** add, view, update, and delete simulated cards.
+- **Credit utilization:** compare outstanding balances with card limits.
+- **Billing cycles:** generate monthly statements from recorded purchases and refunds.
+- **Repayments:** record simulated full or partial payments against statements.
+- **Alerts:** view due-date reminders and high-utilization notifications.
+- **Reports and analytics:** review spending and card-utilization charts.
+- **Administration:** manage account access, review cards, and update contact-message statuses.
+- **Contact form:** save enquiries for administrators to review.
+
+Deleting a card permanently removes its transactions, statements, and repayment records. The app asks for confirmation before deletion. The contact “Reply by email” action opens the administrator’s email app; CreditWise does not send email itself.
 
 ## Technology
 
-- **Frontend:** React, Vite, React Router, Axios, Recharts
-- **Backend:** Node.js, Express, express-validator
-- **Database:** MySQL with Sequelize models and associations
-- **Authentication:** bcrypt password hashing and JWT in an HTTP-only cookie
+| Part | Technology | Purpose |
+| --- | --- | --- |
+| Frontend | React and Vite | Displays pages, forms, and charts in the browser. |
+| Routing | React Router | Connects URLs to the correct page. |
+| API requests | Axios | Sends requests from React to Express. |
+| Backend | Node.js and Express | Handles API routes, validation, and application rules. |
+| Database | MySQL and Sequelize | Stores accounts, cards, activity, and contact enquiries. |
+| Authentication | bcrypt and JWT cookies | Hashes passwords and maintains signed-in sessions. |
 
-The original brief mentions both MongoDB and MySQL. This folder is set up with MySQL and Sequelize, so the finished project uses that relational database. The stack is React + Express + MySQL; it is not technically MERN because MERN uses MongoDB.
+This project uses MySQL with Sequelize. It is not a MERN application because MERN uses MongoDB.
 
-## Run locally
+## How the application works
 
-### 1. Prepare MySQL and backend configuration
+When a user submits a form, the React page sends the data to an Express API route. A controller checks the request and applies the project rules. Sequelize reads or writes the matching MySQL model, and the API returns a response to React.
 
-Create a MySQL database, for example `creditwise_db`. Copy `backend/.env.example` to `backend/.env` and fill in the local database credentials and a private JWT secret. Set `DB_PORT` if MySQL is listening on a port other than `3306`. Set `ADMIN_EMAIL` and `ADMIN_PASSWORD` if you want the server to create an administrator account at startup. The admin credentials have no built-in default.
+```text
+React page → Axios request → Express route → Controller → Sequelize model → MySQL
+```
 
-### 2. Start the API
+## Project structure
+
+```text
+frontend/
+  src/
+    components/  Shared layouts and interface elements
+    context/     Signed-in user state
+    pages/       Application pages
+    services/    Axios API setup
+
+backend/
+  config/        Database connection
+  controllers/   API actions and application rules
+  jobs/          Scheduled alert work
+  middleware/    Authentication, role, and error handling
+  models/        Database table definitions and relationships
+  routes/        API URL definitions and validation
+  utils/         Shared calculations
+```
+
+## Pages
+
+### Public pages
+
+| URL | Page |
+| --- | --- |
+| `/` | Home |
+| `/login` | Login |
+| `/register` | Registration |
+| `/about` | About CreditWise |
+| `/contact` | Contact form |
+
+### User pages
+
+| URL | Page |
+| --- | --- |
+| `/dashboard` | Balance and activity overview |
+| `/cards` | Card management |
+| `/transactions` | Purchases and refunds |
+| `/billing` | Billing statements |
+| `/repayments` | Repayment records |
+| `/notifications` | Alerts and reminders |
+| `/reports` | Spending and utilization charts |
+| `/profile` | Account details |
+
+### Admin pages
+
+| URL | Page |
+| --- | --- |
+| `/admin` | Application overview |
+| `/admin/users` | Manage user access |
+| `/admin/cards` | View cards across accounts |
+| `/admin/contacts` | Review and update contact messages |
+
+## Run the application
+
+Some modules may still be under team integration. Start the application after the latest integrated branch includes all required frontend pages and backend routes.
+
+### Requirements
+
+- Node.js and npm
+- MySQL server
+- A MySQL database for CreditWise
+
+### 1. Get the project
+
+Clone the repository and update the integrated `main` branch:
+
+```sh
+git clone https://github.com/Charani14/creditwise.git
+cd creditwise
+git switch main
+git pull --ff-only origin main
+```
+
+### 2. Configure MySQL and the backend
+
+Create a MySQL database named `creditwise_db`, or choose another name. Copy the example environment file and edit the copy with your local settings:
 
 ```sh
 cd backend
+cp .env.example .env
+```
+
+Set `DB_HOST`, `DB_PORT`, `DB_USER`, `DB_PASSWORD`, and `DB_NAME` in `backend/.env`. Also set a private `JWT_SECRET`. Do not commit this file; `.gitignore` excludes it from Git.
+
+To create an administrator account at startup, replace the example `ADMIN_EMAIL` and `ADMIN_PASSWORD` values with private credentials. `ADMIN_NAME` is the display name. The API creates the account only if that email is not already in the database. Sign in using the configured email and password. Clear both admin variables if you do not want the API to seed an administrator.
+
+Start the backend:
+
+```sh
 npm install
 npm run dev
 ```
 
-The API starts on `http://localhost:5001`, creates or updates its tables with Sequelize, and exposes `GET /api/health` as a health check.
+The API uses port `5001` by default. Check that it is running at:
 
-### 3. Start the React app
+```text
+http://localhost:5001/api/health
+```
 
-In a second terminal:
+### 3. Start the React frontend
+
+Open a second terminal from the project folder:
 
 ```sh
 cd frontend
@@ -41,55 +149,55 @@ npm install
 npm run dev
 ```
 
-Open `http://localhost:5173`. Vite proxies `/api` requests to the Express server on port `5001`. Register a user account to use the normal workspace. Sign in with the configured administrator credentials to use the admin workspace.
+Open the application at:
 
-## Main workflows
+```text
+http://localhost:5173
+```
 
-1. Register and sign in.
-2. Add one or more simulated cards with a limit and billing dates.
-3. Record purchases or refunds. Completed transactions update the card balance.
-4. Generate a statement for a card and billing month. CreditWise totals completed purchases and refunds in that cycle.
-5. Record a full or partial simulated repayment. The statement, remaining amount, and card balance update together.
-6. Review reminders, utilization signals, and reports.
-7. As an administrator, review users, platform card summaries, and contact enquiries.
-
-Deleting a card also permanently deletes its transactions, statements, and repayments. The confirmation dialog explains this before the request is sent. Repayment amounts and records are retained while the card exists; a note can be corrected.
-
-## Team contribution plan
-
-The React pages are separated by feature so three contributors can work in different files. See [TEAM_CONTRIBUTIONS.md](TEAM_CONTRIBUTIONS.md) for the page and backend file assignments, and [GIT_WORKFLOW.md](GIT_WORKFLOW.md) for the branch, pull request, and shared-file workflow.
-
-## Data model
-
-| Table | Purpose | Relationships |
-| --- | --- | --- |
-| `users` | User and administrator accounts | One user has many cards, transactions, statements, repayments, and notifications |
-| `cards` | Simulated card name, limit, billing days, and outstanding balance | Belongs to a user; has many transactions and statements |
-| `transactions` | Purchases and refunds | Belongs to a user and a card |
-| `billing_statements` | Monthly amount due, statement date, due date, and remaining balance | Belongs to a user and card; unique per card and billing cycle |
-| `repayments` | Simulated repayments against a statement | Belongs to a user, card, and statement |
-| `notifications` | Due date and utilization alerts | Belongs to a user and optionally a card |
-| `contact_messages` | Public contact form enquiries | Managed by administrators |
-
-Sequelize foreign keys and model validation enforce the core relationships and field rules. Separate tables keep repeating account and card data in one place. A few models also carry `userId` alongside a parent ID so every user-owned query can check ownership directly.
-
-## Security and access control
-
-- Passwords are hashed with bcrypt; registration never accepts a role from the client.
-- Login state is maintained by a signed JWT in an HTTP-only cookie. The browser does not persist the token in local storage.
-- Express authentication middleware loads the current account and rejects inactive accounts.
-- Admin API routes require both authentication and the `admin` role. Frontend route checks only control navigation; backend middleware is the access boundary.
-- Card, transaction, statement, repayment, and notification queries are scoped to the current user. Repayment creation also verifies the selected statement/card relationship.
-- Input validation is applied in React forms, Express routes, and Sequelize models.
+Vite forwards requests under `/api` to the backend on port `5001`. If you change the backend port, update the proxy target in `frontend/vite.config.mjs` to match.
 
 ## API areas
 
-- `/api/auth` — register, login, logout, current user, profile
-- `/api/cards` — card CRUD
-- `/api/transactions` — transaction CRUD
-- `/api/billing` — list statements and generate a billing cycle
-- `/api/repayments` — record a repayment, view history, correct its note
-- `/api/notifications` — list, mark read, and delete alerts; refreshes alerts on load
-- `/api/reports` — monthly spending, category totals, and card utilization
-- `/api/contact` — public contact form
-- `/api/admin` — admin-only stats, users, cards, and contact message management
+| Base path | Purpose |
+| --- | --- |
+| `/api/auth` | Register, log in or out, read the current account, and update a profile. |
+| `/api/cards` | Add, view, update, and delete cards. |
+| `/api/transactions` | Record and manage purchases and refunds. |
+| `/api/billing` | List statements and generate billing cycles. |
+| `/api/repayments` | Record and view simulated repayments. |
+| `/api/notifications` | View, mark, and delete alerts. |
+| `/api/reports` | Get monthly spending, category totals, and utilization data. |
+| `/api/contact` | Submit a public contact enquiry. |
+| `/api/admin` | Admin-only account, card, statistics, and contact-message actions. |
+
+Most account and card routes require a signed-in user. Admin routes also check the account’s admin role on the backend.
+
+## Data stored
+
+The database uses separate tables for users, cards, transactions, billing statements, repayments, notifications, and contact messages. A user can own multiple cards and related activity. Each card can have transactions and billing statements; repayments are connected to a statement and card.
+
+Sequelize creates or updates the database tables when the backend starts. Do not point this student project at a production database.
+
+## Security and project limits
+
+- Passwords are hashed with bcrypt. Registration cannot choose an admin role.
+- Login uses an HTTP-only JWT cookie.
+- Backend middleware checks authentication and account roles; frontend route checks alone are not the security boundary.
+- User-owned API requests are scoped to the signed-in account.
+- The application does not connect to financial institutions or process payments.
+- Contact replies open a local email application; the server does not send email.
+- Never commit `.env` files, passwords, JWT secrets, `node_modules`, or real financial information.
+
+
+
+## Build and tests
+
+Create a frontend production build with:
+
+```sh
+cd frontend
+npm run build
+```
+
+Automated test suites have not been added yet; the current `npm test` scripts are placeholders.
